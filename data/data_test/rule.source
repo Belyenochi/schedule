@@ -1,0 +1,1 @@
+{"defaultMaxInstancePerHost":2,"groupMaxInstancePerHosts":[{"compactness":true,"group":"group_1","maxInstancePerHost":2}],"nodeResourceWeights":[{"resource":"GPU","weight":10},{"resource":"CPU","weight":2},{"resource":"RAM","weight":1}],"replicasMaxInstancePerHosts":[{"maxInstancePerHost":1,"replicas":100,"restrain":"le"}],"timeLimitInMins":30}
