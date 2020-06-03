@@ -2,7 +2,7 @@ package util
 
 import "django-go/pkg/types"
 
-func BuildPodForApp(app types.App) types.Pod {
+func ToPod(app types.App) types.Pod {
 	return types.Pod{
 		AppName: app.AppName,
 		Group:   app.Group,
@@ -14,22 +14,9 @@ func BuildPodForApp(app types.App) types.Pod {
 }
 
 func PodsTotalResource(pods []types.Pod, resource types.Resource) int {
-	resourceSum := 0
+	sum := 0
 	for _, pod := range pods {
-		resourceSum += podResourceValue(pod, resource)
+		sum += pod.Value(resource)
 	}
-	return resourceSum
-}
-
-func podResourceValue(pod types.Pod, resource types.Resource) int {
-	switch resource {
-	case types.Disk:
-		return pod.Disk
-	case types.RAM:
-		return pod.Ram
-	case types.CPU:
-		return pod.Cpu
-	default:
-		return pod.Gpu
-	}
+	return sum
 }

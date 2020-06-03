@@ -8,6 +8,8 @@ import (
 	"strings"
 
 	"django-go/pkg/types"
+	"fmt"
+	"django-go/pkg/util"
 )
 
 const (
@@ -26,18 +28,40 @@ type Loader struct {
 }
 
 func (loader Loader) loadData(target interface{}, fileName string) ([]byte, error) {
+
 	_, currentFilePath, _, _ := runtime.Caller(1)
+
 	dataBaseDir := strings.Replace(currentFilePath, "pkg/loader/data_loader.go", "data", 1)
+
+	fmt.Println(fmt.Sprintf("read file from directory:%v , fileName:%v", loader.dir, fileName))
+
 	return ioutil.ReadFile(filepath.Join(dataBaseDir, loader.dir, fileName))
 }
 
 func (loader Loader) LoadApps() ([]types.App, error) {
+
 	apps := make([]types.App, 0)
+
 	data, err := loader.loadData(apps, appDataFileName)
+
 	if err == nil {
+
 		err = json.Unmarshal(data, &apps)
+
+		groupCount := 0
+
+		totalReplicas := 0
+
+		for _, app := range apps {
+			groupCount++
+			totalReplicas += app.Replicas
+		}
+
+		fmt.Println(fmt.Sprintf("%v | source count :【group %v, pod %v】", loader.dir, groupCount, totalReplicas))
+
 		return apps, err
 	}
+
 	return nil, err
 }
 
@@ -46,6 +70,7 @@ func (loader Loader) LoadNodes() ([]types.Node, error) {
 	data, err := loader.loadData(nodes, nodeDataFileName)
 	if err == nil {
 		err = json.Unmarshal(data, &nodes)
+		fmt.Println(fmt.Sprintf("%v | source node count : %v", loader.dir, len(nodes)))
 		return nodes, err
 	}
 	return nil, err
@@ -66,6 +91,7 @@ func (loader Loader) LoadRule() (types.Rule, error) {
 	data, err := loader.loadData(rule, ruleDataFileName)
 	if err == nil {
 		err = json.Unmarshal(data, &rule)
+		fmt.Println(fmt.Sprintf("%v | rule : %v", loader.dir, util.ToJsonOrDie(rule)))
 		return rule, err
 	}
 	return types.Rule{}, err
