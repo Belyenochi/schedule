@@ -23,7 +23,7 @@ func StoreSchedule(results []types.ScheduleResult, directory string) {
 
 	path := filepath.Join(dir, constants.SCHEDULE_RESULT)
 
-	fmt.Println("schedule file : " + path)
+	fmt.Println(fmt.Sprintf("schedule file : %v ,result count : %v", path, len(results)))
 
 	bytes, err := json.Marshal(results)
 
@@ -50,7 +50,7 @@ func StoreReschedule(results []types.RescheduleResult, directory string) {
 
 	path := filepath.Join(dir, constants.RESCHEDULE_RESULT)
 
-	fmt.Println("reschedule file : " + path)
+	fmt.Println(fmt.Sprintf("reschedule file : %v ,result count : %v", path, len(results)))
 
 	bytes, err := json.Marshal(results)
 

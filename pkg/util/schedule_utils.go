@@ -4,6 +4,7 @@ import (
 	"django-go/pkg/types"
 	"time"
 	"django-go/pkg/constants"
+	"sort"
 )
 
 func StaticFillOnePod(nwp *types.NodeWithPod, pod types.Pod, allMaxInstancePerNodeLimit map[string]int) bool {
@@ -109,7 +110,17 @@ func CgroupFillOnePod(nwp types.NodeWithPod, pod types.Pod) types.PodPreAlloc {
 		socketMap[topology.Socket] = append(socketMap[topology.Socket], topology)
 	}
 
-	for _, socketTopologys := range socketMap {
+	var socketKeys []int
+
+	for k := range socketMap { //golang map range 有随机性
+		socketKeys = append(socketKeys, k)
+	}
+
+	sort.Ints(socketKeys)
+
+	for _, socket := range socketKeys {
+
+		socketTopologys := socketMap[socket]
 
 		if len(socketTopologys) < pod.Cpu {
 			continue
@@ -132,7 +143,16 @@ func CgroupFillOnePod(nwp types.NodeWithPod, pod types.Pod) types.PodPreAlloc {
 
 		cpus := make([]int, 0)
 
-		for _, coreTopologys := range coreMap {
+		var coreKeys []int
+
+		for k := range coreMap {
+			coreKeys = append(coreKeys, k)
+		}
+
+		sort.Ints(coreKeys)
+
+		for _, core := range coreKeys {
+			coreTopologys := coreMap[core]
 			cpus = append(cpus, coreTopologys[0].Cpu)
 
 			if len(cpus) == pod.Cpu {
@@ -144,7 +164,6 @@ func CgroupFillOnePod(nwp types.NodeWithPod, pod types.Pod) types.PodPreAlloc {
 			Satisfy: true,
 			Cpus:    cpus,
 		}
-
 	}
 
 	return types.EmptyNotSatisfy
