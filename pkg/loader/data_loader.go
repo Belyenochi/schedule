@@ -10,13 +10,14 @@ import (
 	"django-go/pkg/types"
 	"fmt"
 	"django-go/pkg/util"
+	"django-go/pkg/constants"
 )
 
 const (
-	appDataFileName         = "schedule.app.source"
-	nodeDataFileName        = "schedule.node.source"
-	nodeWithPodDataFileName = "reschedule.source"
-	ruleDataFileName        = "rule.source"
+	appDataFileName         = constants.SCHEDULE_APP_SOURCE
+	nodeDataFileName        = constants.SCHEDULE_NODE_SOURCE
+	nodeWithPodDataFileName = constants.RESCHEDULE_SOURCE
+	ruleDataFileName        = constants.RULE_SOURCE
 )
 
 func NewLoader(dir string) Loader {
