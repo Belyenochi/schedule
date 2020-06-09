@@ -1,21 +1,20 @@
-package main
+package utils
 
 import (
-	"time"
-	"django-go/cmd/utils"
-	"os"
 	"fmt"
 	"django-go/pkg/loader"
 	"django-go/pkg/util"
 	"django-go/pkg/types"
 	"django-go/pkg/store"
 	"django-go/pkg/constants"
+	"time"
+	"os"
 )
 
-func main() {
+func Score() {
 	start := time.Now()
 
-	score(utils.AdjustDirectorys(os.Args[1:]))
+	score(AdjustDirectorys(os.Args[1:]))
 
 	fmt.Println(fmt.Sprintf("finish score, total use time : %v/s", time.Now().Sub(start).Seconds()))
 }
@@ -30,26 +29,27 @@ func score(directorys []string) {
 
 		dataLoader := loader.NewLoader(directory)
 
-		rule, err := dataLoader.LoadRule()
+		rule, err := dataLoader.LoadRule() //加载调度规则数据'rule.source'
 		util.MustBeTrue(err == nil, fmt.Sprintf("load rule error, msg:%v", err))
 
-		nodes, err := dataLoader.LoadNodes()
+		nodes, err := dataLoader.LoadNodes() //加载静态布局机器数据'schedule.node.source'
 		util.MustBeTrue(err == nil, fmt.Sprintf("load nodes error, msg:%v", err))
 
-		apps, err := dataLoader.LoadApps()
+		apps, err := dataLoader.LoadApps() //加载静态布局应用数据'schedule.app.source'
 		util.MustBeTrue(err == nil, fmt.Sprintf("load apps error, msg:%v", err))
 
-		nodeWithPods, err := dataLoader.LoadNodeWithPods()
+		nodeWithPods, err := dataLoader.LoadNodeWithPods() //加载动态迁移原始数据'reschedule.source'
 		util.MustBeTrue(err == nil, fmt.Sprintf("load node with pods error, msg:%v", err))
 
-		scheduleResults, err := store.LoadScheduleResults(directory)
+		scheduleResults, err := store.LoadScheduleResults(directory) //加载schedule.result结果数据
 		util.MustBeTrue(err == nil, fmt.Sprintf("load schedule result error, msg:%v", err))
 
-		rescheduleResults, err := store.LoadRescheduleResults(directory)
+		rescheduleResults, err := store.LoadRescheduleResults(directory) //加载reschedule.result结果数据
 		util.MustBeTrue(err == nil, fmt.Sprintf("load reschedule result error, msg:%v", err))
 
-		scheduleScore := scheduleScore(directory, scheduleResults, rule, nodes, apps)
+		scheduleScore := scheduleScore(directory, scheduleResults, rule, nodes, apps) //评测当前目录下静态布局功能
 
+		//静态布局总分，若其中一个目录下的结果数据无效，整个静态布局总分无效。但依然后去计算所有的目录下的静态布局。
 		if scheduleScore == constants.INVALID_SCORE || totalScheduleScore == constants.INVALID_SCORE {
 			totalScheduleScore = constants.INVALID_SCORE
 		} else {
@@ -66,7 +66,6 @@ func score(directorys []string) {
 
 	}
 
-	fmt.Println(fmt.Sprintf("total schedule score : %v , reschedule score : %v", totalScheduleScore, totalRescheduleScore))
 	fmt.Println(fmt.Sprintf("ScoreResult:%v", util.ToJsonOrDie(types.ScoreResult{
 		TotalScheduleScore:   totalScheduleScore,
 		TotalRescheduleScore: totalRescheduleScore,

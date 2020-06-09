@@ -69,3 +69,21 @@ func FromPods(pods []Pod) []GroupRuleAssociate {
 	}
 	return groupRuleAssociates
 }
+
+func ToExpansionMigrateNode(podSn string, nodeSn string, cpuIds []int) GraphMigrateNode {
+	return GraphMigrateNode{
+		PodSn:  podSn,
+		NodeSn: nodeSn,
+		CpuIDs: cpuIds,
+		Type:   EXPANSION,
+	}
+}
+
+func ToOfflineMigrateNode(podSn string, nodeSn string) GraphMigrateNode {
+	return GraphMigrateNode{
+		PodSn:  podSn,
+		NodeSn: nodeSn,
+		CpuIDs: make([]int, 0),
+		Type:   OFFLINE,
+	}
+}

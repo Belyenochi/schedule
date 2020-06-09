@@ -7,6 +7,9 @@ import (
 	"django-go/pkg/constants"
 )
 
+/**
+ * 根据args中的第一个参数或者默认目录(args为空)，确定多少个目录下的数据同时用于并行计算。
+ */
 func AdjustDirectorys(args []string) []string {
 
 	var dirs []string

@@ -7,6 +7,9 @@ import (
 	"sort"
 )
 
+/**
+ * 是否满足静态布局
+ */
 func StaticFillOnePod(nwp *types.NodeWithPod, pod types.Pod, allMaxInstancePerNodeLimit map[string]int) bool {
 
 	if !ResourceFillOnePod(*nwp, pod) {
@@ -32,6 +35,9 @@ func StaticFillOnePod(nwp *types.NodeWithPod, pod types.Pod, allMaxInstancePerNo
 	return true
 }
 
+/**
+ * 资源校验,如果当前宿主机能够容纳下app构建的一个pod，则返回true
+ */
 func ResourceFillOnePod(nwp types.NodeWithPod, pod types.Pod) bool {
 
 	node := nwp.Node
@@ -55,9 +61,12 @@ func ResourceFillOnePod(nwp types.NodeWithPod, pod types.Pod) bool {
 
 }
 
+/**
+ * 布局上的堆叠约束。校验是否超过堆叠上限
+ */
 func LayoutFillOnePod(allMaxInstancePerNodeLimit map[string]int, nwp types.NodeWithPod, verifyPod types.Pod) bool {
 
-	maxInstancePerNodeLimit := allMaxInstancePerNodeLimit[verifyPod.Group]
+	maxInstancePerNodeLimit := allMaxInstancePerNodeLimit[verifyPod.Group]//MaxInstancePerNode约束
 
 	count := 0
 
@@ -71,6 +80,9 @@ func LayoutFillOnePod(allMaxInstancePerNodeLimit map[string]int, nwp types.NodeW
 
 }
 
+/**
+ * 静态布局上的CPU调度
+ */
 func CgroupFillOnePod(nwp types.NodeWithPod, pod types.Pod) types.PodPreAlloc {
 
 	node := nwp.Node

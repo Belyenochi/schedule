@@ -1,6 +1,6 @@
 ### 工程结构
 1. calculate: 参赛者只能修改此模块代码，程序编译会替代"cmd", "data", "pkg"模块为demo中对应模块
-2. cmd : calculate.go为demo程序启动。score.go为数据结果评测启动
+2. cmd : calculate.go为demo程序启动。
 3. data: 数据模块
 4. pkg: 基础功能模块，参赛者可使用，也可不使用
 

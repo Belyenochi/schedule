@@ -7,7 +7,9 @@ import (
 	"errors"
 )
 
-//rule -> nodeResourceWeights数据转化为<资源,<机型,权重>>。
+/**
+ * rule -> nodeResourceWeights数据转化为<资源,<机型,权重>>。
+ */
 func toResourceScoreMap(rule types.Rule) map[types.Resource]map[string]int {
 
 	resourceMap := make(map[types.Resource]map[string]int)
@@ -26,6 +28,9 @@ func toResourceScoreMap(rule types.Rule) map[types.Resource]map[string]int {
 	return resourceMap
 }
 
+/**
+ * 返回所有应用<分组,分组对应的最大可堆叠实例数>
+ */
 func ToAllMaxInstancePerNodeLimit(rule types.Rule, groupRuleAssociates []types.GroupRuleAssociate) map[string]int {
 
 	allMaxInstancePerNodeLimit := make(map[string]int)
@@ -43,7 +48,7 @@ func ToAllMaxInstancePerNodeLimit(rule types.Rule, groupRuleAssociates []types.G
 
 		maxInstancePerHost := replicasMaxInstancePerNode.MaxInstancePerNode
 
-		if restrain == types.GE {
+		if restrain == types.GE {//此规则用意为应用实例数大于或等于(GE)replicas的应用，最大堆叠数量为maxInstancePerNode。
 			for _, groupRuleAssociate := range groupRuleAssociates {
 				if groupRuleAssociate.Replicas >= replicas {
 					allMaxInstancePerNodeLimit[groupRuleAssociate.Group] = maxInstancePerHost

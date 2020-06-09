@@ -10,7 +10,7 @@ import (
 )
 
 type CalculateSchedule struct {
-	start int64
+	start int64 //程序启动时间戳
 }
 
 func NewSchedule(start int64) django.ScheduleInterface {
@@ -42,6 +42,13 @@ func (schedule *CalculateSchedule) Schedule(nodes []types.Node, apps []types.App
 	return results, nil
 }
 
+/**
+ * 通过node按照规则分数从大到小排序, 然后nodes信息转化为能够容乃下pod对象的NodeWithPod对象，与node对象一对一构建。
+ *
+ * @param nodes 宿主机列表
+ * @param rule  规则对象
+ * @return 能够容乃下pod对象的NodeWithPod对象
+ */
 func sortAndInitNodeWithPods(nodes []types.Node, rule types.Rule) []types.NodeWithPod {
 
 	sort.SliceStable(nodes, func(i, j int) bool {
@@ -60,17 +67,22 @@ func sortAndInitNodeWithPods(nodes []types.Node, rule types.Rule) []types.NodeWi
 	return nodeWithPods
 }
 
+/**
+ * 通过apps列表对象转化为实际要扩容的pod列表
+ *
+ * @param apps 应用列表
+ * @return 通过app信息构建的pods列表
+ */
 func sortAndInitPods(apps []types.App) []types.Pod {
 
-	sort.SliceStable(apps, func(i, j int) bool {
-		//对比pod数量
-		if apps[i].Replicas == apps[j].Replicas {
+	sort.SliceStable(apps, func(i, j int) bool {//排序后的app列表
 
-			//如果GPU相对，则对比CPU
-			if apps[i].Gpu == apps[j].Gpu {
-				//如果CPU相对，则对比内存
+		if apps[i].Replicas == apps[j].Replicas { //app对应的pod数量从多到少排序
+
+			if apps[i].Gpu == apps[j].Gpu { //按gpu、cpu、内存、磁盘从大到小排序。
+
 				if apps[i].Cpu == apps[j].Cpu {
-					//如果内存相关，则对比disk
+
 					if apps[i].Ram == apps[j].Ram {
 						return apps[i].Disk > apps[j].Disk
 					}
@@ -100,15 +112,15 @@ func sortAndInitPods(apps []types.App) []types.Pod {
 
 func (schedule *CalculateSchedule) calculate(nodeWithPods []types.NodeWithPod, pods []types.Pod, rule types.Rule, allMaxInstancePerNodeLimit map[string]int) {
 
-	forsakePods := make([]types.Pod, 0)
+	forsakePods := make([]types.Pod, 0)//装不下的容器
 
-	for _, pod := range pods {
+	for _, pod := range pods {//以打散为目的对排序后的pod、node贪心循环
 
-		forsake := true
+		forsake := true//遗弃标识
 
 		for i := range nodeWithPods {
 
-			if util.RuleOverrunTimeLimit(rule, schedule.start) {
+			if util.RuleOverrunTimeLimit(rule, schedule.start) {//时间上限约束，超时跳出。
 				fmt.Println("overrun time limit")
 				return
 			}
@@ -119,7 +131,7 @@ func (schedule *CalculateSchedule) calculate(nodeWithPods []types.NodeWithPod, p
 			}
 		}
 
-		if forsake {
+		if forsake {//所有的机器都不满足此容器分配
 			forsakePods = append(forsakePods, pod)
 		}
 	}

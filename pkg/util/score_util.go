@@ -5,6 +5,7 @@ import (
 	"django-go/pkg/constants"
 	"errors"
 	"fmt"
+	"sort"
 )
 
 //golang不支持方法重载，命名与java有区别
@@ -309,6 +310,150 @@ func resourceScore(scoreMap map[types.Resource]map[string]int, node types.Node) 
 	return sumScore
 }
 
-func ScoreReschedule(resultList []types.RescheduleResult, rule types.Rule, sourceList []types.NodeWithPod) int {
-	return 0
+func ScoreReschedule(results []types.RescheduleResult, rule types.Rule, sourceList []types.NodeWithPod) int {
+
+	minStage := 0
+
+	maxStage := 0
+
+	stageMap := make(map[int]bool)
+
+	for _, result := range results {
+
+		if minStage == 0 || minStage > result.Stage {
+			minStage = result.Stage
+		}
+
+		if maxStage == 0 || maxStage < result.Stage {
+			maxStage = result.Stage
+		}
+
+		stageMap[result.Stage] = true
+
+	}
+
+	if minStage != 1 || len(stageMap) != maxStage { //stage 从1开始的连续自然数
+		return constants.INVALID_SCORE
+	}
+
+	migrateCount := len(results)
+
+	sort.SliceStable(results, func(i, j int) bool {
+		return results[i].Stage < results[j].Stage
+	})
+
+	for _, result := range results {
+		if result.SourceSn == result.TargetSn {
+			return constants.INVALID_SCORE
+		}
+	}
+
+	nodeWithPods := make([]types.NodeWithPod, 0, len(sourceList))
+
+	for _, nwp := range sourceList {
+		nodeWithPods = append(nodeWithPods, nwp.Copy())
+	}
+
+	groupRuleAssociates := types.FromPods(ToPods(nodeWithPods))
+
+	allMaxInstancePerNodeLimit := ToAllMaxInstancePerNodeLimit(rule, groupRuleAssociates)
+
+	result := verifyAndTransformCluster(nodeWithPods, results, allMaxInstancePerNodeLimit)
+
+	if len(result) == 0 {
+		return constants.INVALID_SCORE
+	}
+
+	migrateScore := migrateCount * rule.ScoreWeight.MigratePod
+
+	scheduleScore := ScoreNodeWithPods(result, rule, groupRuleAssociates)
+
+	fmt.Println(fmt.Sprintf("migrate score:%v, and after migrate cluster schedule score:%v", migrateScore, scheduleScore))
+
+	if scheduleScore == constants.INVALID_SCORE {
+		return constants.INVALID_SCORE
+	}
+
+	return migrateScore + scheduleScore
+}
+
+func verifyAndTransformCluster(nodeWithPods []types.NodeWithPod, results []types.RescheduleResult, allMaxInstancePerNodeLimit map[string]int) []types.NodeWithPod {
+
+	allPodMap := ToPodMap(nodeWithPods)
+
+	nodeWithPodMap := make(map[string]int)
+
+	for index, nwp := range nodeWithPods {
+		nodeWithPodMap[nwp.Node.Sn] = index
+	}
+
+	for _, result := range results {
+
+		verifyPod, ok := allPodMap[result.PodSn]
+
+		if !ok {
+			return make([]types.NodeWithPod, 0)
+		}
+
+		//处理扩容
+
+		expansion := types.ToExpansionMigrateNode(result.PodSn, result.TargetSn, result.CpuIds)
+
+		index, ok := nodeWithPodMap[expansion.NodeSn]
+
+		if !ok {
+			return make([]types.NodeWithPod, 0)
+		}
+
+		nodeWithPod := &nodeWithPods[index]
+
+		if !ResourceFillOnePod(*nodeWithPod, verifyPod) {
+			return make([]types.NodeWithPod, 0)
+		}
+
+		if !LayoutFillOnePod(allMaxInstancePerNodeLimit, *nodeWithPod, verifyPod) {
+			return make([]types.NodeWithPod, 0)
+		}
+
+		podPreAlloc := CgroupFillOnePod(*nodeWithPod, verifyPod)
+
+		if !podPreAlloc.Satisfy {
+			return make([]types.NodeWithPod, 0)
+		}
+
+		if len(podPreAlloc.Cpus) > 0 {
+			verifyPod.CpuIds = podPreAlloc.Cpus
+		}
+
+		nodeWithPod.Pods = append(nodeWithPod.Pods, verifyPod)
+
+		//处理缩容
+
+		offine := types.ToOfflineMigrateNode(result.PodSn, result.SourceSn)
+
+		index, ok = nodeWithPodMap[offine.NodeSn]
+
+		if !ok {
+			return make([]types.NodeWithPod, 0)
+		}
+
+		nodeWithPod = &nodeWithPods[index]
+
+		newPods := make([]types.Pod, 0)
+
+		for _, pod := range nodeWithPod.Pods {
+
+			if pod.PodSn == verifyPod.PodSn {
+				continue
+			}
+
+			newPods = append(newPods, pod)
+
+		}
+
+		nodeWithPod.Pods = newPods
+
+	}
+
+	return nodeWithPods
 }

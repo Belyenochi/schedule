@@ -84,7 +84,6 @@ func LoadScheduleResults(directory string) ([]types.ScheduleResult, error) {
 
 	if err == nil {
 		err = json.Unmarshal(data, &scheduleResults)
-		fmt.Println("")
 		return scheduleResults, err
 	}
 	return nil, err
@@ -109,7 +108,6 @@ func LoadRescheduleResults(directory string) ([]types.RescheduleResult, error) {
 
 	if err == nil {
 		err = json.Unmarshal(data, &rescheduleResults)
-		fmt.Println("")
 		return rescheduleResults, err
 	}
 	return nil, err

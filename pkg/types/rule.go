@@ -19,8 +19,8 @@ type ScoreWeight struct {
 type Restrain string
 
 const (
-	LE Restrain = "le"
-	GE Restrain = "ge"
+	LE Restrain = "le"//小于或等于
+	GE Restrain = "ge"//大于或等于
 )
 
 var AllRestrains = []string{string(LE), string(GE)}
