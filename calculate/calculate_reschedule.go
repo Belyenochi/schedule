@@ -6,6 +6,7 @@ import (
 	"django-go/pkg/util"
 	"fmt"
 	"strconv"
+	"sort"
 )
 
 type CalculateReschedule struct {
@@ -43,7 +44,17 @@ func (reschedule *CalculateReschedule) calculate(nodeWithPods []types.NodeWithPo
 
 	forsakePods := make([]types.Pod, 0) //装不下的容器
 
-	for sourceSn, pods := range againstPods {
+	var sourceSnKeys []string
+
+	for sourceSn := range againstPods { //golang map range 有随机性，维持遍历againstPods与java版本一致
+		sourceSnKeys = append(sourceSnKeys, sourceSn)
+	}
+
+	sort.Strings(sourceSnKeys)
+
+	for _, sourceSn := range sourceSnKeys {
+
+		pods := againstPods[sourceSn]
 
 		for _, pod := range pods { //以打散为目的对排序后的pod、node贪心循环
 

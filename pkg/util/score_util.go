@@ -28,27 +28,35 @@ func ResourceNodesScore(nodes []types.Node, rule types.Rule) int {
 
 func ScoreNodeWithPods(nodeWithPods []types.NodeWithPod, rule types.Rule, groupRuleAssociates []types.GroupRuleAssociate) int {
 
-	if !dataSatisfy(nodeWithPods, groupRuleAssociates) {
+	nwps := make([]types.NodeWithPod, 0)
+
+	for _, nwp := range nodeWithPods {
+		if len(nwp.Pods) > 0 {
+			nwps = append(nwps, nwp)
+		}
+	}
+
+	if !dataSatisfy(nwps, groupRuleAssociates) {
 		return constants.INVALID_SCORE
 	}
 
-	if !resourceSatisfy(nodeWithPods) {
+	if !resourceSatisfy(nwps) {
 		return constants.INVALID_SCORE
 	}
 
-	layoutScore := layoutScore(nodeWithPods, rule, groupRuleAssociates)
+	layoutScore := layoutScore(nwps, rule, groupRuleAssociates)
 
 	if layoutScore < 0 {
 		return constants.INVALID_SCORE
 	}
 
-	cgroupScore := cgroupScore(nodeWithPods, rule)
+	cgroupScore := cgroupScore(nwps, rule)
 
 	if cgroupScore < 0 {
 		return constants.INVALID_SCORE
 	}
 
-	resourceScore := ResourceNodesScore(ToNodes(nodeWithPods), rule)
+	resourceScore := ResourceNodesScore(ToNodes(nwps), rule)
 
 	fmt.Println(fmt.Sprintf("layoutScore:%v , cgroupScore:%v , resourceScore:%v ", layoutScore, cgroupScore, resourceScore))
 
