@@ -423,14 +423,18 @@ func verifyAndTransformCluster(nodeWithPods []types.NodeWithPod, results []types
 			return make([]types.NodeWithPod, 0)
 		}
 
-		podPreAlloc := CgroupFillOnePod(*nodeWithPod, verifyPod)
+		//podPreAlloc := CgroupFillOnePod(*nodeWithPod, verifyPod)
+		//
+		//if !podPreAlloc.Satisfy {
+		//	return make([]types.NodeWithPod, 0)
+		//}
+		//
+		//if len(podPreAlloc.Cpus) > 0 {
+		//	verifyPod.CpuIds = podPreAlloc.Cpus
+		//}
 
-		if !podPreAlloc.Satisfy {
-			return make([]types.NodeWithPod, 0)
-		}
-
-		if len(podPreAlloc.Cpus) > 0 {
-			verifyPod.CpuIds = podPreAlloc.Cpus
+		if len(result.CpuIds) > 0 {
+			verifyPod.CpuIds = result.CpuIds
 		}
 
 		nodeWithPod.Pods = append(nodeWithPod.Pods, verifyPod)
