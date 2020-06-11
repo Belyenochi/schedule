@@ -10,17 +10,17 @@ import (
 /**
  * 是否满足静态布局
  */
-func StaticFillOnePod(nwp *types.NodeWithPod, pod types.Pod, allMaxInstancePerNodeLimit map[string]int) bool {
+func StaticFillOnePod(nwp *types.NodeWithPod, pod *types.Pod, allMaxInstancePerNodeLimit map[string]int) bool {
 
-	if !ResourceFillOnePod(*nwp, pod) {
+	if !ResourceFillOnePod(*nwp, *pod) {
 		return false
 	}
 
-	if !LayoutFillOnePod(allMaxInstancePerNodeLimit, *nwp, pod) {
+	if !LayoutFillOnePod(allMaxInstancePerNodeLimit, *nwp, *pod) {
 		return false
 	}
 
-	podPreAlloc := CgroupFillOnePod(*nwp, pod)
+	podPreAlloc := CgroupFillOnePod(*nwp, *pod)
 
 	if !podPreAlloc.Satisfy {
 		return false
@@ -30,7 +30,7 @@ func StaticFillOnePod(nwp *types.NodeWithPod, pod types.Pod, allMaxInstancePerNo
 		pod.CpuIds = podPreAlloc.Cpus
 	}
 
-	nwp.Pods = append(nwp.Pods, pod)
+	nwp.Pods = append(nwp.Pods, *pod)
 
 	return true
 }

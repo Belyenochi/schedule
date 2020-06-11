@@ -75,7 +75,7 @@ func (reschedule *CalculateReschedule) calculate(nodeWithPods []types.NodeWithPo
 					continue
 				}
 
-				if util.StaticFillOnePod(&nodeWithPods[i], pod, allMaxInstancePerNodeLimit) {
+				if util.StaticFillOnePod(&nodeWithPods[i], &pod, allMaxInstancePerNodeLimit) {
 
 					forsake = false
 

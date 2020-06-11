@@ -125,7 +125,7 @@ func (schedule *CalculateSchedule) calculate(nodeWithPods []types.NodeWithPod, p
 				return
 			}
 
-			if util.StaticFillOnePod(&nodeWithPods[i], pod, allMaxInstancePerNodeLimit) {
+			if util.StaticFillOnePod(&nodeWithPods[i], &pod, allMaxInstancePerNodeLimit) {
 				forsake = false
 				break
 			}
