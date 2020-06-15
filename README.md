@@ -1,8 +1,14 @@
-### 工程结构
-1. calculate: 参赛者只能修改此模块代码，程序编译会替代"cmd", "data", "pkg"模块为demo中对应模块
-2. cmd : calculate.go为demo程序启动。
-3. data: 数据模块
-4. pkg: 基础功能模块，参赛者可使用，也可不使用
+### 赛题更新
+1. 赛题样例、数据、测评流程: <https://code.aliyun.com/middleware-contest-2020/django>
 
-### 代码提交
-1. fork go-demo工程，创建自己的私有工程，并添加用户信息middleware-show为Reporter权限。提交自定义的私有仓库https地址或ssh地址测试。
+### 工程结构
+1. calculate: 参赛者实现静态布局和动态迁移功能模块。
+2. pkg: 基础功能模块，参赛者可使用，也可不使用。
+3. data: 数据模块。
+4. cmd : 程序启动运行模块。
+
+### 工程注意
+1. 参赛者只能修改calculate模块代码。程序在测评编译阶段会替代"cmd", "data", "pkg"模块为demo中对应模块
+
+### 程序运行
+1. calculate.go 为demo程序启动。
