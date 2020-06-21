@@ -17,7 +17,7 @@ func NewSchedule(start int64) django.ScheduleInterface {
 	return &CalculateSchedule{start}
 }
 
-func (schedule *CalculateSchedule) Schedule(nodes []types.Node, apps []types.App, rule types.Rule) ([]types.ScheduleResult, error) {
+func (schedule *CalculateSchedule)Schedule(nodes []types.Node, apps []types.App, rule types.Rule)([]types.ScheduleResult, error) {
 
 	nodeWithPods := sortAndInitNodeWithPods(nodes, rule)
 
